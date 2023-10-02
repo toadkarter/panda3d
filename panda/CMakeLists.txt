@@ -1,6 +1,6 @@
-if(NOT BUILD_DTOOL)
-  message(FATAL_ERROR "Cannot build panda without dtool!  Please enable the BUILD_DTOOL option.")
-endif()
+if (NOT BUILD_DTOOL)
+    message(FATAL_ERROR "Cannot build panda without dtool!  Please enable the BUILD_DTOOL option.")
+endif ()
 
 # Include panda source directories
 add_subdirectory(src/audio)
@@ -54,6 +54,7 @@ add_subdirectory(src/recorder)
 add_subdirectory(src/testbed)
 add_subdirectory(src/text)
 add_subdirectory(src/tform)
+add_subdirectory(src/tinydisplay)
 add_subdirectory(src/vision)
 add_subdirectory(src/vrpn)
 add_subdirectory(src/wgldisplay)
@@ -81,39 +82,39 @@ add_subdirectory(metalibs/pandaphysics)
 
 # Now add the Python modules:
 set(CORE_MODULE_COMPONENTS
-  p3chan p3char p3collide p3cull p3device p3dgraph p3display
-  p3downloader p3event p3express p3gobj p3grutil p3gsgbase p3linmath
-  p3mathutil p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui
-  p3pipeline p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform
-  p3prc p3dtoolutil p3dtoolbase
+        p3chan p3char p3collide p3cull p3device p3dgraph p3display
+        p3downloader p3event p3express p3gobj p3grutil p3gsgbase p3linmath
+        p3mathutil p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui
+        p3pipeline p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform
+        p3prc p3dtoolutil p3dtoolbase
 )
 
-if(WANT_NATIVE_NET)
-  list(APPEND CORE_MODULE_COMPONENTS p3nativenet)
-  if(HAVE_NET)
-    list(APPEND CORE_MODULE_COMPONENTS p3net)
-  endif()
-endif()
+if (WANT_NATIVE_NET)
+    list(APPEND CORE_MODULE_COMPONENTS p3nativenet)
+    if (HAVE_NET)
+        list(APPEND CORE_MODULE_COMPONENTS p3net)
+    endif ()
+endif ()
 
-if(HAVE_AUDIO)
-  list(APPEND CORE_MODULE_COMPONENTS p3audio)
-endif()
+if (HAVE_AUDIO)
+    list(APPEND CORE_MODULE_COMPONENTS p3audio)
+endif ()
 
-if(HAVE_FREETYPE)
-  list(APPEND CORE_MODULE_COMPONENTS p3pnmtext)
-endif()
+if (HAVE_FREETYPE)
+    list(APPEND CORE_MODULE_COMPONENTS p3pnmtext)
+endif ()
 
-if(INTERROGATE_PYTHON_INTERFACE)
-  add_python_module(panda3d.core ${CORE_MODULE_COMPONENTS} LINK panda)
+if (INTERROGATE_PYTHON_INTERFACE)
+    add_python_module(panda3d.core ${CORE_MODULE_COMPONENTS} LINK panda)
 
-  # Generate our __init__.py
-  if(WIN32)
-    file(READ "${PROJECT_SOURCE_DIR}/cmake/templates/win32_python/__init__.py" win32_init)
-  else()
-    set(win32_init "")
-  endif()
+    # Generate our __init__.py
+    if (WIN32)
+        file(READ "${PROJECT_SOURCE_DIR}/cmake/templates/win32_python/__init__.py" win32_init)
+    else ()
+        set(win32_init "")
+    endif ()
 
-  set(init_file "\"Python bindings for the Panda3D libraries\"
+    set(init_file "\"Python bindings for the Panda3D libraries\"
 
 __version__ = '${PROJECT_VERSION}'
 
@@ -123,7 +124,7 @@ if __debug__:
 
 ${win32_init}")
 
-  set(dtoolconfig_file "'''Alias of :mod:`panda3d.interrogatedb`.
+    set(dtoolconfig_file "'''Alias of :mod:`panda3d.interrogatedb`.
 
 .. deprecated:: 1.10.0
    This module has been renamed to :mod:`panda3d.interrogatedb`.
@@ -134,19 +135,19 @@ if __debug__:
 from .interrogatedb import *
 ")
 
-  if(IS_MULTICONFIG)
-    foreach(config ${CMAKE_CONFIGURATION_TYPES})
-      # Generate an __init__.py in the per-configuration directory.
-      file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/__init__.py" ${init_file})
-      file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
-    endforeach(config)
-  else()
-    file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py" ${init_file})
-    file(WRITE "${PROJECT_BINARY_DIR}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
-  endif()
+    if (IS_MULTICONFIG)
+        foreach (config ${CMAKE_CONFIGURATION_TYPES})
+            # Generate an __init__.py in the per-configuration directory.
+            file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/__init__.py" ${init_file})
+            file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
+        endforeach (config)
+    else ()
+        file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py" ${init_file})
+        file(WRITE "${PROJECT_BINARY_DIR}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
+    endif ()
 
-  # Also generate a panda3d.dist-info directory.
-  set(entry_points_file "[distutils.commands]
+    # Also generate a panda3d.dist-info directory.
+    set(entry_points_file "[distutils.commands]
 build_apps = direct.dist.commands:build_apps
 bdist_apps = direct.dist.commands:bdist_apps
 
@@ -154,45 +155,45 @@ bdist_apps = direct.dist.commands:bdist_apps
 build_apps = direct.dist.commands:finalize_distribution_options
 ")
 
-  configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/METADATA.in"
-                 "${PROJECT_BINARY_DIR}/panda3d.dist-info/METADATA")
-  file(WRITE "${PROJECT_BINARY_DIR}/panda3d.dist-info/entry_points.txt" ${entry_points_file})
+    configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/METADATA.in"
+            "${PROJECT_BINARY_DIR}/panda3d.dist-info/METADATA")
+    file(WRITE "${PROJECT_BINARY_DIR}/panda3d.dist-info/entry_points.txt" ${entry_points_file})
 
-  if(HAVE_BULLET)
-    add_python_module(panda3d.bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)
+    if (HAVE_BULLET)
+        add_python_module(panda3d.bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)
 
-    export_targets(BulletPython NAMESPACE "Panda3D::Python::" COMPONENT BulletDevel)
-  endif()
+        export_targets(BulletPython NAMESPACE "Panda3D::Python::" COMPONENT BulletDevel)
+    endif ()
 
-  if(HAVE_EGG)
-    add_python_module(panda3d.egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core COMPONENT EggPython)
+    if (HAVE_EGG)
+        add_python_module(panda3d.egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core COMPONENT EggPython)
 
-    export_targets(EggPython NAMESPACE "Panda3D::Python::" COMPONENT EggDevel)
-  endif()
+        export_targets(EggPython NAMESPACE "Panda3D::Python::" COMPONENT EggDevel)
+    endif ()
 
-  add_python_module(panda3d.fx pandafx IMPORT panda3d.core)
-  add_python_module(panda3d.physics p3physics p3particlesystem LINK pandaphysics IMPORT panda3d.core)
+    add_python_module(panda3d.fx pandafx IMPORT panda3d.core)
+    add_python_module(panda3d.physics p3physics p3particlesystem LINK pandaphysics IMPORT panda3d.core)
 
-  if(HAVE_ODE)
-    add_python_module(panda3d.ode p3ode IMPORT panda3d.core COMPONENT ODEPython)
+    if (HAVE_ODE)
+        add_python_module(panda3d.ode p3ode IMPORT panda3d.core COMPONENT ODEPython)
 
-    export_targets(ODEPython NAMESPACE "Panda3D::Python::" COMPONENT ODEDevel)
-  endif()
+        export_targets(ODEPython NAMESPACE "Panda3D::Python::" COMPONENT ODEDevel)
+    endif ()
 
-  if(HAVE_OPENCV OR HAVE_ARTOOLKIT)
-    add_python_module(panda3d.vision p3vision IMPORT panda3d.core COMPONENT VisionPython)
+    if (HAVE_OPENCV OR HAVE_ARTOOLKIT)
+        add_python_module(panda3d.vision p3vision IMPORT panda3d.core COMPONENT VisionPython)
 
-    export_targets(VisionPython NAMESPACE "Panda3D::Python::" COMPONENT VisionDevel)
-  endif()
+        export_targets(VisionPython NAMESPACE "Panda3D::Python::" COMPONENT VisionDevel)
+    endif ()
 
-  if(HAVE_VRPN)
-    add_python_module(panda3d.vrpn p3vrpn IMPORT panda3d.core COMPONENT VRPNPython)
-    set_target_properties(panda3d.vrpn PROPERTIES CXX_EXCEPTIONS ON)
+    if (HAVE_VRPN)
+        add_python_module(panda3d.vrpn p3vrpn IMPORT panda3d.core COMPONENT VRPNPython)
+        set_target_properties(panda3d.vrpn PROPERTIES CXX_EXCEPTIONS ON)
 
-    export_targets(VRPNPython NAMESPACE "Panda3D::Python::" COMPONENT VRPNDevel)
-  endif()
+        export_targets(VRPNPython NAMESPACE "Panda3D::Python::" COMPONENT VRPNDevel)
+    endif ()
 
-  export_targets(Python NAMESPACE "Panda3D::Python::" COMPONENT CoreDevel)
-endif()
+    export_targets(Python NAMESPACE "Panda3D::Python::" COMPONENT CoreDevel)
+endif ()
 
 export_targets(Core COMPONENT CoreDevel)
